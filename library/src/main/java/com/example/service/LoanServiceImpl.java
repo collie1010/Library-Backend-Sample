@@ -37,20 +37,20 @@ public class LoanServiceImpl implements LoanService {
     public LoanResponseDto createLoan(LoanDto dto) {
         // 验证图书是否存在且可用
         Book book = bookRepository.findById(dto.getBookId())
-                .orElseThrow(() -> new NotFoundException("图书不存在"));
+                .orElseThrow(() -> new NotFoundException("圖書不存在"));
         
         if (!book.getAvailable()) {
-            throw new IllegalArgumentException("图书不可借阅");
+            throw new IllegalArgumentException("圖書不可借閱");
         }
 
         // 验证借阅者是否存在
         Borrower borrower = borrowerRepository.findById(dto.getBorrowerId())
-                .orElseThrow(() -> new NotFoundException("借阅者不存在"));
+                .orElseThrow(() -> new NotFoundException("借閱者不存在"));
 
         // 检查图书是否已被借出
         List<Loan> activeLoans = loanRepository.findActiveLoansByBook(dto.getBookId());
         if (!activeLoans.isEmpty()) {
-            throw new IllegalArgumentException("图书已被借出");
+            throw new IllegalArgumentException("圖書已被借出");
         }
 
         // 设置借阅日期和到期日期

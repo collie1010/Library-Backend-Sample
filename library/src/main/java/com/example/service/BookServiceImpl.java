@@ -35,7 +35,8 @@ public class BookServiceImpl implements BookService {
                 .isbn(dto.getIsbn())
                 .publishedYear(dto.getPublishedYear())
                 .author(author)
-                .available(true)
+                .quantity(dto.getQuantity())
+                .availableQuantity(dto.getQuantity()) // 初始化可借閱數量為總庫存量
                 .build();
         Book savedBook = bookRepository.save(book);
         return convertToResponseDto(savedBook);
@@ -50,6 +51,12 @@ public class BookServiceImpl implements BookService {
         if (dto.getAuthorId() != null) {
             Author a = authorRepository.findById(dto.getAuthorId()).orElseThrow(() -> new NotFoundException("Author not found"));
             book.setAuthor(a);
+        }
+        if (dto.getQuantity() != null) {
+            // 計算庫存變化量
+            int quantityChange = dto.getQuantity() - book.getQuantity();
+            book.setQuantity(dto.getQuantity());
+            book.setAvailableQuantity(book.getAvailableQuantity() + quantityChange);
         }
         Book savedBook = bookRepository.save(book);
         return convertToResponseDto(savedBook);
@@ -89,7 +96,8 @@ public class BookServiceImpl implements BookService {
                 .title(book.getTitle())
                 .isbn(book.getIsbn())
                 .publishedYear(book.getPublishedYear())
-                .available(book.getAvailable())
+                .quantity(book.getQuantity())
+                .availableQuantity(book.getAvailableQuantity())
                 .author(authorDto)
                 .build();
     }

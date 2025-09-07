@@ -36,8 +36,9 @@ public class Book {
 
     private Integer publishedYear;
 
-    @Builder.Default
-    private Boolean available = true;
+    private Integer quantity; // 總庫存量
+
+    private Integer availableQuantity; // 可借閱數量
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")

@@ -3,6 +3,7 @@ package com.example.controller;
 import java.net.URI;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.dto.LoanDto;
 import com.example.dto.LoanResponseDto;
@@ -30,8 +32,12 @@ public class LoanController {
 
     @PostMapping
     public ResponseEntity<LoanResponseDto> create(@Validated @RequestBody LoanDto dto) {
-        LoanResponseDto created = loanService.createLoan(dto);
-        return ResponseEntity.created(URI.create("/api/loans/" + created.getId())).body(created);
+        try {
+            LoanResponseDto created = loanService.createLoan(dto);
+            return ResponseEntity.created(URI.create("/api/loans/" + created.getId())).body(created);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")

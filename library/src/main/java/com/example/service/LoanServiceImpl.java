@@ -35,27 +35,21 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public LoanResponseDto createLoan(LoanDto dto) {
-        // 验证图书是否存在且可用
+        // 驗證圖書是否存在且可用
         Book book = bookRepository.findById(dto.getBookId())
                 .orElseThrow(() -> new NotFoundException("圖書不存在"));
-        
-        if (!book.getAvailable()) {
-            throw new IllegalArgumentException("圖書不可借閱");
+
+        if (book.getAvailableQuantity() <= 0) {
+            throw new IllegalArgumentException("圖書庫存不足，無法借閱");
         }
 
-        // 验证借阅者是否存在
+        // 驗證借閱者是否存在
         Borrower borrower = borrowerRepository.findById(dto.getBorrowerId())
                 .orElseThrow(() -> new NotFoundException("借閱者不存在"));
 
-        // 检查图书是否已被借出
-        List<Loan> activeLoans = loanRepository.findActiveLoansByBook(dto.getBookId());
-        if (!activeLoans.isEmpty()) {
-            throw new IllegalArgumentException("圖書已被借出");
-        }
-
-        // 设置借阅日期和到期日期
+        // 設定借閱日期和到期日期
         LocalDate loanDate = dto.getLoanDate() != null ? dto.getLoanDate() : LocalDate.now();
-        LocalDate dueDate = dto.getDueDate() != null ? dto.getDueDate() : loanDate.plusDays(14); // 默认14天
+        LocalDate dueDate = dto.getDueDate() != null ? dto.getDueDate() : loanDate.plusDays(14); // 預設14天
 
         Loan loan = Loan.builder()
                 .book(book)
@@ -66,8 +60,8 @@ public class LoanServiceImpl implements LoanService {
 
         Loan savedLoan = loanRepository.save(loan);
 
-        // 更新图书状态为不可用
-        book.setAvailable(false);
+        // 更新圖書庫存
+        book.setAvailableQuantity(book.getAvailableQuantity() - 1);
         bookRepository.save(book);
 
         return convertToResponseDto(savedLoan);
@@ -141,9 +135,9 @@ public class LoanServiceImpl implements LoanService {
         Loan savedLoan = loanRepository.save(loan);
         
 
-        // 更新图书状态为可用
+        // 更新圖書庫存
         Book book = loan.getBook();
-        book.setAvailable(true);
+        book.setAvailableQuantity(book.getAvailableQuantity() + 1);
         bookRepository.save(book);
 
         return convertToResponseDto(savedLoan);
@@ -163,7 +157,8 @@ public class LoanServiceImpl implements LoanService {
                 .title(loan.getBook().getTitle())
                 .isbn(loan.getBook().getIsbn())
                 .publishedYear(loan.getBook().getPublishedYear())
-                .available(loan.getBook().getAvailable())
+                .quantity(loan.getBook().getQuantity())
+                .availableQuantity(loan.getBook().getAvailableQuantity())
                 .build();
 
         BorrowerResponseDto borrowerDto = BorrowerResponseDto.builder()

@@ -19,4 +19,5 @@ public class BookDto {
     private String isbn;
     private Integer publishedYear;
     private Long authorId; // 關聯 Author
+    private Integer quantity; // 總庫存量
 }

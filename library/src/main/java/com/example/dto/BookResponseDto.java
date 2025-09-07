@@ -17,7 +17,8 @@ public class BookResponseDto {
     private String title;
     private String isbn;
     private Integer publishedYear;
-    private Boolean available;
+    private Integer quantity; // 總庫存量
+    private Integer availableQuantity; // 可借閱數量
     private AuthorResponseDto author;
 
     @Getter
